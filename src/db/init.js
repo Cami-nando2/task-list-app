@@ -22,6 +22,7 @@ async function initDatabase(config) {
   `);
 
   await connection.end();
+  console.log("Database initialized successfully");
 }
 
 module.exports = initDatabase;

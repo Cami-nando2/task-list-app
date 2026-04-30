@@ -1,63 +1,93 @@
 const tasksContainer = document.getElementById("tasksContainer");
 const refreshBtn = document.getElementById("refreshBtn");
 const taskForm = document.getElementById("taskForm");
+const taskCount = document.getElementById("taskCount");
 
 function renderTasks(tasks) {
   tasksContainer.innerHTML = "";
+
+  const done = tasks.filter(t => t.completed).length;
+  taskCount.textContent = `${tasks.length} tasks — ${done} completed`;
+
+  if (tasks.length === 0) {
+    tasksContainer.innerHTML = `<p class="text-muted">No tasks yet. Add one!</p>`;
+    return;
+  }
+
   tasks.forEach(task => {
     const col = document.createElement("div");
-    col.className = "col-md-6 col-lg-4 mb-4";
+    col.className = "col-md-6 col-lg-4";
 
     col.innerHTML = `
-      <div class="card h-100 shadow-sm">
+      <div class="card h-100 ${task.completed ? "completed" : ""}">
         <div class="card-body">
-          <h5 class="card-title">${task.title}</h5>
-          <p>Status: ${task.completed ? "✅ Completed" : "⏳ Pending"}</p>
-          <button class="btn btn-sm btn-success" onclick="updateTask(${task.id}, true)">Complete</button>
-          <button class="btn btn-sm btn-danger" onclick="deleteTask(${task.id})">Delete</button>
+          <span class="status-badge ${task.completed ? "badge-completed" : "badge-pending"}">
+            ${task.completed ? "✅ Completed" : "⏳ Pending"}
+          </span>
+          <h5 class="card-title ${task.completed ? "done" : ""}">${task.title}</h5>
+          <div class="card-actions">
+            <button class="btn btn-sm ${task.completed ? "btn-outline-secondary" : "btn-success"}"
+              onclick="toggleTask(${task.id})">
+              ${task.completed ? "Mark Pending" : "Complete"}
+            </button>
+            <button class="btn btn-sm btn-danger btn-delete-task" onclick="deleteTask(${task.id})">
+              Delete
+            </button>
+          </div>
         </div>
       </div>
     `;
+
     tasksContainer.appendChild(col);
   });
 }
 
 async function loadTasks() {
-  const response = await fetch("/api/tasks");
-  const tasks = await response.json();
-  renderTasks(tasks);
+  try {
+    const response = await fetch("/api/tasks");
+    const tasks = await response.json();
+    renderTasks(tasks);
+  } catch (err) {
+    tasksContainer.innerHTML = `<p class="text-danger">Could not load tasks.</p>`;
+  }
 }
 
-async function updateTask(id, completed) {
-  await fetch(`/api/tasks/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ completed })
-  });
-  loadTasks();
+async function toggleTask(id) {
+  try {
+    await fetch(`/api/tasks/${id}/toggle`, { method: "PUT" });
+    loadTasks();
+  } catch (err) {
+    console.error("Error toggling task:", err);
+  }
 }
 
 async function deleteTask(id) {
-  await fetch(`/api/tasks/${id}`, { method: "DELETE" });
-  loadTasks();
+  try {
+    await fetch(`/api/tasks/${id}`, { method: "DELETE" });
+    loadTasks();
+  } catch (err) {
+    console.error("Error deleting task:", err);
+  }
 }
 
 taskForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  const title = document.getElementById("title").value;
+  const title = document.getElementById("title").value.trim();
+  if (!title) return;
 
-  await fetch("/api/tasks", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ title })
-  });
-
-  taskForm.reset();
-  bootstrap.Modal.getInstance(document.getElementById("addTaskModal")).hide();
-  loadTasks();
+  try {
+    await fetch("/api/tasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title })
+    });
+    taskForm.reset();
+    bootstrap.Modal.getInstance(document.getElementById("addTaskModal")).hide();
+    loadTasks();
+  } catch (err) {
+    console.error("Error creating task:", err);
+  }
 });
 
 refreshBtn.addEventListener("click", loadTasks);
-
-// Cargar tareas al inicio
 loadTasks();
