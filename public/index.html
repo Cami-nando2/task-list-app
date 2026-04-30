@@ -13,15 +13,15 @@
     <div class="container">
       <span class="navbar-brand">Task Hub</span>
       <div class="d-flex gap-2">
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal">Add Task</button>
-        <button class="btn btn-outline-secondary" id="refreshBtn">Refresh</button>
+        <button class="btn-add" data-bs-toggle="modal" data-bs-target="#addTaskModal">+ Add task</button>
+        <button class="btn-refresh" id="refreshBtn">Refresh</button>
       </div>
     </div>
   </nav>
 
-  <main class="container py-4">
-    <h4 class="mb-1">My Tasks</h4>
-    <p class="text-muted mb-4" id="taskCount"></p>
+  <main class="container py-4" style="max-width: 960px;">
+    <h4 class="page-title">My tasks</h4>
+    <p class="page-subtitle" id="taskCount"></p>
     <div class="row g-3" id="tasksContainer"></div>
   </main>
 
@@ -30,7 +30,7 @@
       <div class="modal-content">
         <form id="taskForm">
           <div class="modal-header">
-            <h5 class="modal-title">New Task</h5>
+            <h5 class="modal-title">New task</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">

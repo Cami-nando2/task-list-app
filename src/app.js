@@ -22,7 +22,6 @@ async function startApp() {
   await initDatabase(dbConfig);
   const pool = mysql.createPool(dbConfig);
 
-  // GET all tasks
   app.get("/api/tasks", async (req, res) => {
     try {
       const [rows] = await pool.query("SELECT * FROM tasks ORDER BY created_at DESC");
@@ -32,7 +31,6 @@ async function startApp() {
     }
   });
 
-  // POST create task
   app.post("/api/tasks", async (req, res) => {
     const { title } = req.body;
     if (!title || title.trim() === "") {
@@ -46,14 +44,12 @@ async function startApp() {
     }
   });
 
-  // PUT toggle completed status
   app.put("/api/tasks/:id/toggle", async (req, res) => {
     const { id } = req.params;
     try {
       const [[task]] = await pool.query("SELECT completed FROM tasks WHERE id = ?", [id]);
       if (!task) return res.status(404).json({ message: "Task not found" });
-
-      const newStatus = !task.completed;
+      const newStatus = task.completed ? 0 : 1;
       await pool.query("UPDATE tasks SET completed = ? WHERE id = ?", [newStatus, id]);
       res.json({ message: "Task toggled", completed: newStatus });
     } catch (err) {
@@ -61,7 +57,6 @@ async function startApp() {
     }
   });
 
-  // DELETE task
   app.delete("/api/tasks/:id", async (req, res) => {
     const { id } = req.params;
     try {

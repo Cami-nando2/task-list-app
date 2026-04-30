@@ -10,7 +10,12 @@ function renderTasks(tasks) {
   taskCount.textContent = `${tasks.length} tasks — ${done} completed`;
 
   if (tasks.length === 0) {
-    tasksContainer.innerHTML = `<p class="text-muted">No tasks yet. Add one!</p>`;
+    tasksContainer.innerHTML = `
+      <div class="col-12 empty-state">
+        <p style="font-size:32px">📋</p>
+        <p style="font-weight:600;color:#555">No tasks yet</p>
+        <p>Click "+ Add task" to get started</p>
+      </div>`;
     return;
   }
 
@@ -24,15 +29,12 @@ function renderTasks(tasks) {
           <span class="status-badge ${task.completed ? "badge-completed" : "badge-pending"}">
             ${task.completed ? "✅ Completed" : "⏳ Pending"}
           </span>
-          <h5 class="card-title ${task.completed ? "done" : ""}">${task.title}</h5>
+          <p class="card-title ${task.completed ? "done" : ""}">${task.title}</p>
           <div class="card-actions">
-            <button class="btn btn-sm ${task.completed ? "btn-outline-secondary" : "btn-success"}"
-              onclick="toggleTask(${task.id})">
-              ${task.completed ? "Mark Pending" : "Complete"}
+            <button class="btn-toggle ${task.completed ? "" : "complete"}" onclick="toggleTask(${task.id})">
+              ${task.completed ? "Mark pending" : "Mark complete"}
             </button>
-            <button class="btn btn-sm btn-danger btn-delete-task" onclick="deleteTask(${task.id})">
-              Delete
-            </button>
+            <button class="btn-del" onclick="deleteTask(${task.id})">Delete</button>
           </div>
         </div>
       </div>
@@ -44,8 +46,8 @@ function renderTasks(tasks) {
 
 async function loadTasks() {
   try {
-    const response = await fetch("/api/tasks");
-    const tasks = await response.json();
+    const res = await fetch("/api/tasks");
+    const tasks = await res.json();
     renderTasks(tasks);
   } catch (err) {
     tasksContainer.innerHTML = `<p class="text-danger">Could not load tasks.</p>`;
